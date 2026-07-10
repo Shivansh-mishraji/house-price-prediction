@@ -11,3 +11,8 @@ wheels/
 
 # Serialized models and large data files
 *.joblib
+# Auto-added safety rules
+.env
+.venv/
+node_modules/
+*.whl
