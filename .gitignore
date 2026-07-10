@@ -16,3 +16,14 @@ wheels/
 .venv/
 node_modules/
 *.whl
+
+# Safety rules
+*.pyc
+.env.*
+!.env.example
+*.pkl
+*.db
+*.sqlite3
+*.log
+Datasets/
+*.csv
