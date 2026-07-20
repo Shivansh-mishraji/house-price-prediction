@@ -48,7 +48,7 @@ class HouseFeatures(BaseModel):
     )
 
 @app.get("/")
-def home():
+def home(): -> None:
     return{
         "Message":"Calefornia House Prediction API",
         "Status Code": "running",
