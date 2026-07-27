@@ -17,37 +17,37 @@ features = joblib.load("house_features.joblib")
 # input schema
 class HouseFeatures(BaseModel):
     MedInc: float = Field(
-        gt=0, 
+        gt=0,
         description="Median income in block group (in tens of thousands of USD, e.g. 3.5 = $35,000)"
     )
     HouseAge: float = Field(
-        gt=0, 
+        gt=0,
         description="Median age of houses in block group"
     )
     AveRooms: float = Field(
-        gt=0, 
+        gt=0,
         description="Average number of rooms per household"
     )
     AveBedrms: float = Field(
-        gt=0, 
+        gt=0,
         description="Average number of bedrooms per household"
     )
     Population: float = Field(
-        gt=0, 
+        gt=0,
         description="Block group population"
     )
     AveOccup: float = Field(
-        gt=0, 
+        gt=0,
         description="Average number of household members (occupancy)"
     )
     Latitude: float = Field(
-        ge=32.0, 
-        le=43.0, 
+        ge=32.0,
+        le=43.0,
         description="Block group latitude (California latitude boundaries)"
     )
     Longitude: float = Field(
-        ge=-125.0, 
-        le=-113.0, 
+        ge=-125.0,
+        le=-113.0,
         description="Block group longitude (California longitude boundaries)"
     )
 
@@ -83,23 +83,23 @@ def predict(house: HouseFeatures):
             "Latitude": house.Latitude,
             "Longitude": house.Longitude
         }])
-        
+
         # 2. Make the prediction
         prediction = model.predict(input_data)[0]
-        
+
         # 3. Scale the price (target is in $100,000s in California Housing)
         actual_price = float(prediction) * 100000.0
-        
+
         # Model evaluation metrics (based on your training results)
         r2_score = 0.805  # ~80.5% variance explained
         mae = 33000.0    # Mean Absolute Error
         rmse = 50000.0   # Root Mean Squared Error (used for confidence range)
         mse = 0.25       # Mean Squared Error
-        
+
         # Calculate confidence range using RMSE
         lower_bound = max(10000.0, actual_price - rmse)
         upper_bound = actual_price + rmse
-        
+
         # 4. Return a highly readable, human-friendly result
         return {
             "status": "success",
@@ -113,7 +113,7 @@ def predict(house: HouseFeatures):
                 f"likely to fall between ${lower_bound:,.0f} and ${upper_bound:,.0f}."
             )
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
@@ -128,15 +128,15 @@ def upload_model(file: UploadFile = File(...)):
         temp_file_path = "house_model_temp.joblib"
         with open(temp_file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-            
+
         # Try loading it first to verify it's a valid joblib file and model
         temp_model = joblib.load(temp_file_path)
-        
+
         # If valid, replace old model file and reload in memory
         if os.path.exists("house_model.joblib"):
             os.remove("house_model.joblib")
         os.rename(temp_file_path, "house_model.joblib")
-        
+
         model = temp_model
         return {
             "status": "success",
@@ -155,7 +155,7 @@ def predict_csv(file: UploadFile = File(...)):
     try:
         # Read the uploaded CSV
         df_input = pd.read_csv(file.file)
-        
+
         # Verify required features exist in the uploaded CSV
         missing_features = [f for f in features if f not in df_input.columns]
         if missing_features:
@@ -163,23 +163,23 @@ def predict_csv(file: UploadFile = File(...)):
                 status_code=400,
                 detail=f"CSV file is missing required columns: {missing_features}"
             )
-            
+
         # Get predictions
         predictions = model.predict(df_input[features])
-        
+
         # Format output
         results = []
         for i, pred in enumerate(predictions):
             actual_price = float(pred) * 100000.0
             lower_bound = max(10000.0, actual_price - 50000.0) # Using $50,000 RMSE
             upper_bound = actual_price + 50000.0
-            
+
             results.append({
                 "row_index": i + 1,
                 "estimated_market_value": f"${actual_price:,.0f}",
                 "expected_price_range": f"Between ${lower_bound:,.0f} and ${upper_bound:,.0f}"
             })
-            
+
         return {
             "status": "success",
             "total_predictions": len(results),
