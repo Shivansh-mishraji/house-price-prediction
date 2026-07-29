@@ -54,3 +54,7 @@ You can't learn without breaking things. Here are a few things that tripped me u
 3. Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) in your browser to interactively test all endpoints using Swagger!
 
 This is just the beginning. Next stop: connecting a real database and building a stunning frontend UI! 🚀
+
+---
+
+_Last updated: July 29, 2026_
