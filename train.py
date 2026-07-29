@@ -1,3 +1,8 @@
+"""
+Train module.
+Part of the House_Prediction package.
+"""
+
 import logging
 
 logger = logging.getLogger(__name__)
